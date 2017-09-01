@@ -20,12 +20,15 @@ with f:
     for line in f:
         # metadata is default read as JSON object & implicitly cast to dict
         metadata = isbnlib.meta(line)
-
-        outputFile.write(metadata['Title'] + ", ")
-        # Authors returns as a list, so string cast and separator needed
-        outputFile.write("; ".join(metadata['Authors']) + ", ")
-        outputFile.write(metadata['Volume'] + ", ")
-        outputFile.write(metadata['Year'] + ", ")
-        outputFile.write(metadata['ISBN-13'])
-
-        outputFile.write("\n")
+        
+        if metadata is not None: 
+            outputFile.write((metadata['Title'] + ", ").encode('utf-8'))
+            # Authors returns as a list, so string cast and separator needed
+            outputFile.write(("; ".join(metadata['Authors']) + ", ").encode('utf-8'))
+            # outputFile.write(metadata['Volume'] + ", ") 
+            outputFile.write(metadata['Year'] + ", ")
+            outputFile.write(metadata['ISBN-13'])
+            outputFile.write("\n")
+        else: 
+            outputFile.write("Error with ISBN: " + line)
+            
