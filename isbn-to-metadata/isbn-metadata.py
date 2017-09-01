@@ -22,11 +22,11 @@ with f:
         metadata = isbnlib.meta(line)
         
         if metadata is not None: 
-            outputFile.write((metadata['Title'] + ", ").encode('utf-8'))
+            outputFile.write((metadata['Title'] + "; ").encode('utf-8'))
             # Authors returns as a list, so string cast and separator needed
-            outputFile.write(("; ".join(metadata['Authors']) + ", ").encode('utf-8'))
-            # outputFile.write(metadata['Volume'] + ", ") 
-            outputFile.write(metadata['Year'] + ", ")
+            outputFile.write(("; ".join(metadata['Authors']) + "; ").encode('utf-8'))
+            # outputFile.write(metadata['Volume'] + "; ") 
+            outputFile.write(metadata['Year'] + "; ")
             outputFile.write(metadata['ISBN-13'])
             outputFile.write("\n")
         else: 
