@@ -14,6 +14,7 @@ with f:
         outputFile.write(metadata['Title'] + ", ")
         # Authors returns as a list, so string cast and separator needed
         outputFile.write("; ".join(metadata['Authors']) + ", ")
-        outputFile.write(metadata['Year'] + "")
+        outputFile.write(metadata['Year'] + ", ")
+        outputFile.write(metadata['ISBN-13'])
 
         outputFile.write("\n")
