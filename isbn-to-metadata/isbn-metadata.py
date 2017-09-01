@@ -1,8 +1,18 @@
+import sys
 import isbnlib
 
-inputFile = "input.txt"
-outputFile = open('output.csv', 'a')
-f = open(inputFile)
+inputPath = "input.txt"
+outputPath = "output.csv"
+
+if len(sys.argv) != 2:
+    print("Using default i/o paths, where possible")
+else:
+    inputPath = str(sys.argv[1])
+    outputPath = str(sys.argv[2])
+
+f = open(inputPath)
+outputFile = open(outputPath, 'a')
+
 
 metadata = {}
 
