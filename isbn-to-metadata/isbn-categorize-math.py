@@ -1,6 +1,7 @@
 import sys
 import json
 import urllib
+import time
 
 inputPath = "input.txt"
 outputPath = "output.csv"
@@ -23,6 +24,8 @@ bookTitle = ""
 
 with f:
     for line in f:
+        time.sleep(5)
+        
         # metadata is default read as JSON object & implicitly cast to dict
         string = line.replace("\n", "") #strip newline 
         gBooksHTML = urllib.urlopen(gBooksPath + string)
@@ -30,37 +33,45 @@ with f:
         metadata = json.loads(gBooksHTML.read())
         string += ", "
         
-        if metadata is not None and metadata['totalItems'] is not 0: 
+        try: 
             #if metadata description contains "undergrad"
             #else "grad
-            print metadata
-            if "undergraduate" in metadata['items'][0]['volumeInfo']['description']:
-                string += "Undergrad"    
-            else:
-                string += "Graduate"
+            #print metadata
+           
+            try: 
+                if "undergrad" in metadata['items'][0]['volumeInfo']['description']:
+                    string += "Undergrad"    
+                else:
+                    string += "Graduate"
+            except:
+                if "undergrad" in metadata['items'][0]['searchInfo']['textSnippet']:
+                    string += "Undergrad (~)"    
+                else:
+                    string += "Graduate (~)"
             
             string += ", "
             
             bookTitle = metadata['items'][0]['volumeInfo']['title']
             # sorry this is so gross
-            if "Analysis" in bookTitle:
+            if "Analysis" in bookTitle and "-Analysis" not in bookTitle:
                 string += "Analysis; "
             if "Topolog" in bookTitle:
                 string += "Topology; "
-            if "Probability" or "Stochastic" in bookTitle: #and stochastic
+            if "Probability" in bookTitle or "Stochastic" in bookTitle: #and stochastic
                 string += "Probability Theory; "
             if "Logic" in bookTitle:
                 string += "Logic; "
             if "Number Theory" in bookTitle:
                 string += "Number Theory; "
-            if "Application" or "Engineering" in bookTitle: #or engineering
+            if "Application" in bookTitle or "Engineering" in bookTitle: #or engineering
                 string += "Applications; "
             if "Comput" in bookTitle:
                 string += "Computation; "
             if "Algebra" in bookTitle:
                 string += "Algebra; "
           
-            outputFile.write(string +"\n")
-            
-        else: 
-            outputFile.write("Error with ISBN: " + line)
+            outputFile.write(string + "\n")
+            print "Success!: " + line.replace("\n", "")
+        except:
+            outputFile.write(line)
+            print "Sad!:" + line.replace("\n", "")
