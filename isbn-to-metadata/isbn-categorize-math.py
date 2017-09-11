@@ -7,6 +7,7 @@ inputPath = "input.txt"
 outputPath = "output.csv"
 
 gBooksPath = "https://www.googleapis.com/books/v1/volumes?q=isbn:"
+isbndbPath = "http://isbndb.com/api/v2/json/5QXMWUUV/book/"
 
 if len(sys.argv) != 2:
     print("Using default i/o paths, where possible")
@@ -18,60 +19,93 @@ f = open(inputPath)
 outputFile = open(outputPath, 'a')
 
 metadata = {}
-lineBuff = ""
-bookDescription = ""
-bookTitle = ""
 
 with f:
     for line in f:
-        time.sleep(5)
         
-        # metadata is default read as JSON object & implicitly cast to dict
-        string = line.replace("\n", "") #strip newline 
-        gBooksHTML = urllib.urlopen(gBooksPath + string)
-        
-        metadata = json.loads(gBooksHTML.read())
-        string += ", "
-        
-        try: 
-            #if metadata description contains "undergrad"
-            #else "grad
-            #print metadata
-           
-            try: 
-                if "undergrad" in metadata['items'][0]['volumeInfo']['description']:
-                    string += "Undergrad"    
-                else:
-                    string += "Graduate"
-            except:
-                if "undergrad" in metadata['items'][0]['searchInfo']['textSnippet']:
-                    string += "Undergrad (~)"    
-                else:
-                    string += "Graduate (~)"
-            
-            string += ", "
-            
-            bookTitle = metadata['items'][0]['volumeInfo']['title']
-            # sorry this is so gross
-            if "Analysis" in bookTitle and "-Analysis" not in bookTitle:
-                string += "Analysis; "
-            if "Topolog" in bookTitle:
-                string += "Topology; "
-            if "Probability" in bookTitle or "Stochastic" in bookTitle: #and stochastic
-                string += "Probability Theory; "
-            if "Logic" in bookTitle:
-                string += "Logic; "
-            if "Number Theory" in bookTitle:
-                string += "Number Theory; "
-            if "Application" in bookTitle or "Engineering" in bookTitle: #or engineering
-                string += "Applications; "
-            if "Comput" in bookTitle:
-                string += "Computation; "
-            if "Algebra" in bookTitle:
-                string += "Algebra; "
-          
-            outputFile.write(string + "\n")
-            print "Success!: " + line.replace("\n", "")
-        except:
+        # so you can rerun analysis on same file
+        if len(line) > 15:
             outputFile.write(line)
-            print "Sad!:" + line.replace("\n", "")
+            print "Already done!:" + line.replace("\n", "")
+            continue
+        else:
+            
+            try:
+                # should make  api calls less sad
+                time.sleep(3)
+                string = line.replace("\n", "") #strip newline 
+                
+                # api call and categorization
+                try:
+                    apiPath = urllib.urlopen(gBooksPath + string)    
+                    metadata = json.loads(apiPath.read())
+                    print metadata['items'][0]['volumeInfo']['description']
+                    
+                    try: 
+                        string += ", " + levelCat(metadata['items'][0]['volumeInfo']['description'], True)
+                    except:
+                        string += ", " + levelCat(metadata['items'][0]['searchInfo']['textSnippet'], False)
+            
+                    string += ", " + bookCat(metadata['items'][0]['volumeInfo']['title'])
+              
+                    outputFile.write(string + "\n")
+                    print "Success!: " + line.replace("\n", "")
+                
+                # if Google doesn't have data, switch to isbnDB
+                except:
+                    apiPath = urllib.urlopen(isbndbPath + string)
+                    metadata = json.loads(apiPath.read())
+                
+                    try: 
+                        if "undergrad" in metadata['items'][0]['volumeInfo']['description']:
+                            string += "Undergrad"    
+                        else:
+                            string += "Graduate"
+                    except:
+                        if "undergrad" in metadata['items'][0]['searchInfo']['textSnippet']:
+                            string += "Undergrad (~)"    
+                        else:
+                            string += "Graduate (~)"
+                    
+                    string += ", " + bookCat(metadata['items'][0]['volumeInfo']['title'])
+              
+                    outputFile.write(string + "\n")
+                    print "Success!: " + line.replace("\n", "")
+            
+                string += ", "
+                    # uses other metadata field if full description is not available
+                         
+            except:
+                outputFile.write(line)
+                print "Sad!:" + line.replace("\n", "")
+
+def levelCat(description, certain):
+    if "undergrad" in metadata['items'][0]['volumeInfo']['description']:
+        string += "Undergrad"    
+    else:
+        string += "Graduate"
+    
+    if not certain: 
+        string += "(~)"
+    
+def bookCat(bookTitle):
+    categoryString = ""
+    
+    if "Analysis" in bookTitle and "-Analysis" not in bookTitle:
+        categoryString += "Analysis; "
+    if "Topolog" in bookTitle:
+        categoryString += "Topology; "
+    if "Probability" in bookTitle or "Stochastic" in bookTitle: #and stochastic
+        categoryString += "Probability Theory; "
+    if "Logic" in bookTitle:
+        categoryString += "Logic; "
+    if "Number Theory" in bookTitle:
+        categoryString += "Number Theory; "
+    if "Application" in bookTitle or "Engineering" in bookTitle: #or engineering
+        categoryString += "Applications; "
+    if "Comput" in bookTitle:
+        categoryString += "Computation; "
+    if "Algebra" in bookTitle:
+        categoryString += "Algebra; "
+        
+    return categoryString
