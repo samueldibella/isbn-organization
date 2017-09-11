@@ -3,6 +3,45 @@ import json
 import urllib
 import time
 
+def levelCat(description, certain):
+    """ Guess student level book is intended for """
+
+    if "undergrad" in description:
+        level = "Undergrad"    
+    else:
+        level = "Graduate"
+    
+    if not certain: 
+        level += "(~)"
+        
+    return level
+    
+def bookCat(bookTitle):
+    """ Try to categorize math subfield of book """
+
+    categoryString = ""
+    
+    if "Analysis" in bookTitle and "-Analysis" not in bookTitle:
+        categoryString += "Analysis; "
+    if "Topolog" in bookTitle:
+        categoryString += "Topology; "
+    if "Probability" in bookTitle or "Stochastic" in bookTitle: #and stochastic
+        categoryString += "Probability Theory; "
+    if "Logic" in bookTitle:
+        categoryString += "Logic; "
+    if "Number Theory" in bookTitle:
+        categoryString += "Number Theory; "
+    if "Application" in bookTitle or "Engineering" in bookTitle: #or engineering
+        categoryString += "Applications; "
+    if "Comput" in bookTitle:
+        categoryString += "Computation; "
+    if "Algebra" in bookTitle:
+        categoryString += "Algebra; "
+        
+    return categoryString
+
+####
+
 inputPath = "input.txt"
 outputPath = "output.csv"
 
@@ -37,15 +76,14 @@ with f:
                 
                 # api call and categorization
                 try:
-                    apiPath = urllib.urlopen(gBooksPath + string)    
+                    apiPath = urllib.urlopen(gBooksPath + string)
                     metadata = json.loads(apiPath.read())
-                    print metadata['items'][0]['volumeInfo']['description']
-                    
-                    try: 
+
+                    try:
                         string += ", " + levelCat(metadata['items'][0]['volumeInfo']['description'], True)
                     except:
                         string += ", " + levelCat(metadata['items'][0]['searchInfo']['textSnippet'], False)
-            
+
                     string += ", " + bookCat(metadata['items'][0]['volumeInfo']['title'])
               
                     outputFile.write(string + "\n")
@@ -56,18 +94,9 @@ with f:
                     apiPath = urllib.urlopen(isbndbPath + string)
                     metadata = json.loads(apiPath.read())
                 
-                    try: 
-                        if "undergrad" in metadata['items'][0]['volumeInfo']['description']:
-                            string += "Undergrad"    
-                        else:
-                            string += "Graduate"
-                    except:
-                        if "undergrad" in metadata['items'][0]['searchInfo']['textSnippet']:
-                            string += "Undergrad (~)"    
-                        else:
-                            string += "Graduate (~)"
+                    string += ", " + levelCat(metadata['data'][0]['summary'], True)
                     
-                    string += ", " + bookCat(metadata['items'][0]['volumeInfo']['title'])
+                    string += ", " + bookCat(metadata['data'][0]['title_latin'])
               
                     outputFile.write(string + "\n")
                     print "Success!: " + line.replace("\n", "")
@@ -78,34 +107,3 @@ with f:
             except:
                 outputFile.write(line)
                 print "Sad!:" + line.replace("\n", "")
-
-def levelCat(description, certain):
-    if "undergrad" in metadata['items'][0]['volumeInfo']['description']:
-        string += "Undergrad"    
-    else:
-        string += "Graduate"
-    
-    if not certain: 
-        string += "(~)"
-    
-def bookCat(bookTitle):
-    categoryString = ""
-    
-    if "Analysis" in bookTitle and "-Analysis" not in bookTitle:
-        categoryString += "Analysis; "
-    if "Topolog" in bookTitle:
-        categoryString += "Topology; "
-    if "Probability" in bookTitle or "Stochastic" in bookTitle: #and stochastic
-        categoryString += "Probability Theory; "
-    if "Logic" in bookTitle:
-        categoryString += "Logic; "
-    if "Number Theory" in bookTitle:
-        categoryString += "Number Theory; "
-    if "Application" in bookTitle or "Engineering" in bookTitle: #or engineering
-        categoryString += "Applications; "
-    if "Comput" in bookTitle:
-        categoryString += "Computation; "
-    if "Algebra" in bookTitle:
-        categoryString += "Algebra; "
-        
-    return categoryString
