@@ -22,7 +22,7 @@ def cleanedCorpus(string):
         cleaned = "".join(c for c in cleaned if c not in ('!', '.', ","))
         abstracts.append(cleaned)
     
-    stoplist = set('for a of the and to in by with on at from about as through after over without before under'.split())
+    stoplist = set('is that this are should when which or an two we if new results  = leq theory show not it all may one such there be for a of the and to in by with on at from about as through after over without before under'.split())
     texts = [[word for word in abstract.lower().split() if word not in stoplist] for abstract in abstracts]
         
     return texts
@@ -45,23 +45,24 @@ def cleanToMm(texts, snippet):
 
 def main():
     
-    corpus = cleanedCorpus("http://export.arxiv.org/api/query?search_query=all:electron&start=0&max_results=15")
+    corpus = cleanedCorpus("http://export.arxiv.org/api/query?search_query=cat:math.LO+OR+cat:astro-ph+OR+cat:stat.TH&start=0&max_results=100")
     mmCorpus = cleanToMm(corpus, "electron")
     
 
 
     # generate latent semantic index
-    lsi = gensim.models.LsiModel(corpus=mmCorpus[0], id2word=mmCorpus[1], num_topics=10)
+    lsi = gensim.models.LsiModel(corpus=mmCorpus[0], id2word=mmCorpus[1], num_topics=6)
     
-    pprint(lsi.print_topics(num_topics=10, num_words=9))
+    pprint(lsi.print_topics(num_topics=6, num_words=6))
     print("============================================")
     
+    """
     automata = cleanedCorpus("http://export.arxiv.org/api/query?search_query=all:automata&start=0&max_results=15")
     mmAutomata = cleanToMm(corpus, "automata")
     mmCorpus[1].merge_with(mmAutomata[1])
     lsi.id2word=mmCorpus[1]
     lsi.add_documents(mmAutomata[0])
     
-    pprint(lsi.print_topics(num_topics=10, num_words=9))
-
+    pprint(lsi.print_topics(num_topics=5, num_words=6))
+    """
 main()
