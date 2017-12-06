@@ -1,11 +1,11 @@
 import sys
-import urllib
+import urllib.request
 import time
 import re
 from bs4 import BeautifulSoup
 
 inputPath = "UTMtitles.txt"
-outputPath = "output.csv"
+outputPath = "UTM.csv"
 
 springerPath = "http://www.springer.com/us/book/"
 # springerPath = "https://api.springer.com/metadata/json?q=isbn:"
@@ -33,18 +33,21 @@ with f:
         else:
             try:
                 # should make  api calls less sad
-                time.sleep(1)
+                time.sleep(.1)
                 string = line.replace("\n", "") #strip newline
                 url = springerPath + string
-                print(url)
 
-                # api call and categorization
-                apiPath = urllib.urlopen(url)
+                #  api call and categorization
+                apiPath = urllib.request.urlopen(url)
+
                 soup = BeautifulSoup(apiPath.read(), "html.parser")
 
-                chapterString = soup.find(span, class_="chapter-count").content
-                chapterNumber = re.findal('\d+', chapterString)
+                chapterString = soup.find("span", class_="chapter-count").contents
+                chapterNumber = re.findall('\d+', chapterString[0])
 
+                title = soup.find("p", class_="title").contents
+                authors = soup.find("p", class_="authors").contents
+                copyrightYear = soup.find("div", class_="copyright").contents
 
 
                 """
@@ -57,9 +60,9 @@ with f:
                 string += ", " + metadata['result'][0]
                 """
 
-                outputFile.write(string + ", " + chapterNumber + "\n")
+                outputFile.write(string + ", " + chapterNumber[0] + ", " + title[0] + ", " + authors[0] + ", " + copyrightYear[0] + "\n")
                 print("Success!: " + line.replace("\n", ""))
 
             except:
-                outputFile.write(line)
+                outputFile.write(string + "\n")
                 print("Sad!: " + line.replace("\n", ""))
